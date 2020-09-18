@@ -66,6 +66,7 @@ public class AIProject2Main extends PApplet {
 		
 		System.out.println(midiNotes.getPitchArray());
 		markovPitchGenerator.train(midiNotes.getPitchArray());
+		System.out.println(markovPitchGenerator.getTotal());
 		markovPitchGenerator.printTransTable();
 	}
 

@@ -51,7 +51,6 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
     	        			row.add(0); // for each array (row) in the transition table add 0 (expand horizontally)
                 		}
     	        }
-            	
             	alphabet.add(inputTokens.get(i)); // add the token to the alphabet array
 				alphabet_counts.add(0);
 				System.out.println(alphabet);
@@ -61,20 +60,22 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
         	if (lastIndex > -1) {
             	for (int j = 0; j < transitionTable.size(); j++) {
             		
-            		if (j == lastIndex) { // 1. Use lastIndex to get the correct row (array) in your transition table.
+            		if (alphabet.get(j).equals(inputTokens.get(lastIndex))) { // Use lastIndex to get the correct row (array) in your transition table.
                 		ArrayList row = transitionTable.get(j);
     	        		for (int k = 0; k < row.size(); k++) {
     	        			
-    	        			if (k == tokenIndex) {  //  2. Use the tokenIndex to index the correct column (value of the row you accessed)
+    	        			if (k == tokenIndex) {  // Use the tokenIndex to index the correct column (value of the row you accessed)
     	        				int currentValue = (int) row.get(k);
-    	        				row.set(k, currentValue + 1); // 3.	Add 1 to that value.
+    	        				row.set(k, currentValue + 1); // Add 1 to that value.
+    	        				
+    	        				int tempCount = alphabet_counts.get(j) + 1; // update alphabet counts
+    	    					alphabet_counts.set(j, tempCount);
     	        			}
     	        		}
             		}
-            	}
-            }
-        	
-            lastIndex = lastIndex + 1; //setting current to previous for next round
+        		}
+			}
+        	lastIndex = lastIndex + 1; //setting current to previous for next round
         }
 }
 	
