@@ -1,7 +1,11 @@
 /* Ru Ferguson
  * 21 September 2020
  * 
- */
+ * This program will play the Super Mario Bros Theme using the Kontakt MIDI Player just as it did in Project 1
+ * and will store the notes used, the occurrences of each note, and the probabilities of each note occurring 
+ * in an ArrayList of ArrayLists using the MarkovGenerator class. The class can also generate the next most likely
+ * note using the probabilities stored to attempt to produce "nice" sounding melodies. Project 1 methods and unit tests
+ * are still available in this patch.*/
 
 import processing.core.*;
 

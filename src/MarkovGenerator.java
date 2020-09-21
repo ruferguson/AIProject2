@@ -1,21 +1,23 @@
 /* Ru Ferguson
  * 21 September 2020
  * 
- */
+ * This class inherits from the superclass, ProbabilityGenerator from project 1 and will use Markov chains
+ * to predict the next most probable "best sounding" musical notes based on the probability calculated
+ * using the order and occurrences of each note. The train() method formulate the probabilities and the
+ * next most probable note will be output and stored using the using the generate() method. */
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MarkovGenerator<T> extends ProbabilityGenerator<T> {	
 	
-    ArrayList<ArrayList<Integer>> transitionTable = new ArrayList(); // a 2D array representing your transition tables – so, probably an array of arrays
-
-    
+	// a 2D array representing your transition tables – so, probably an array of arrays
+    ArrayList<ArrayList<Integer>> transitionTable = new ArrayList(); 
 	MarkovGenerator() {
 		super();
 	}
 	
-	T generate() {
+	T generate() { // WORK IN PROGRESS
 		T newToken = null;
 		// do something here
 		return newToken;
@@ -67,8 +69,7 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 	}
 	
 	void train(ArrayList<T> inputTokens) {
-		// This is the index of the PREVIOUS token.
-	    int lastIndex = -1;
+	    int lastIndex = -1; // This is the index of the PREVIOUS token.
         
         for (int i = 0; i < inputTokens.size(); i++) { // for each token in the input array 
         	
@@ -77,7 +78,6 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
         		tokenIndex = alphabet.size();
         		ArrayList<Integer> newRow = new ArrayList<Integer>(); // Create a new array that is the size of the alphabet 
         		transitionTable.add(newRow); // Then add to your transition table (the array of arrays) (expanding vertically)
-        		
             	for (int j = 0; j < transitionTable.size(); j++) {
                 		ArrayList row = transitionTable.get(j);
                 		while (row.size() < transitionTable.size()) {
@@ -88,18 +88,14 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 				alphabet_counts.add(0);
             }
         	
-            // ok, now add the counts to the transition table
-        	if (lastIndex > -1) {
+        	if (lastIndex > -1) { // ok, now add the counts to the transition table
             	for (int j = 0; j < transitionTable.size(); j++) {
-            		
             		if (alphabet.get(j).equals(inputTokens.get(lastIndex))) { // Use lastIndex to get the correct row (array) in your transition table.
                 		ArrayList row = transitionTable.get(j);
     	        		for (int k = 0; k < row.size(); k++) {
-    	        			
     	        			if (k == tokenIndex) {  // Use the tokenIndex to index the correct column (value of the row you accessed)
     	        				int currentValue = (int) row.get(k);
     	        				row.set(k, currentValue + 1); // Add 1 to that value.
-    	        				
     	        				int tempCount = alphabet_counts.get(j) + 1; // update alphabet counts
     	    					alphabet_counts.set(j, tempCount);
     	        			}
