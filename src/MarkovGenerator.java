@@ -21,6 +21,11 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 		return newToken;
 	}
 	
+	// returns the an ArrayList from the transitionTable
+	public ArrayList<Integer> getTransTable(int i) {
+		return transitionTable.get(i);
+	}
+	
 	void printTransTable () {	
 		for (int j = 0; j < transitionTable.size(); j++) {
 
@@ -32,14 +37,42 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
     	}
 	}
 	
+	// returns the total number of notes in the row
+	public Integer getRowTotal(int i) {
+		int total = 0;
+		ArrayList row = transitionTable.get(i);
+    	for (int j = 0; j < row.size(); j++) {
+    		total = total + (int) row.get(j);
+    	}
+		return total;
+	}
+	
+	// adds the probabilities to an ArrayList called probabilities
+	public ArrayList<Double> getProbabilities(int i) { 
+		ArrayList row = transitionTable.get(i);
+		for (int j = 0; j < row.size(); j++) {
+			double rowAsDouble = (int) row.get(j); // row is from an array of integers and must be converted to a double for division
+			double newProb = rowAsDouble / getRowTotal(i);
+			while (probabilities.isEmpty() || probabilities.size() != row.size()) {
+				probabilities.add(newProb); 
+			}
+			if (rowAsDouble == 0 && getRowTotal(i) == 0) { // to negate any instance of 0 / 0
+				newProb = 0;
+			}
+			probabilities.set(j, newProb); 
+			// System.out.println("row.get(j) is " + row.get(j) + ". row total is " + getRowTotal(i) + ". newProb is " + newProb);
+
+		}
+		return probabilities;
+	}
+	
 	void train(ArrayList<T> inputTokens) {
 		// This is the index of the PREVIOUS token.
 	    int lastIndex = -1;
         
         for (int i = 0; i < inputTokens.size(); i++) { // for each token in the input array 
-
+        	
         	int tokenIndex = alphabet.indexOf(inputTokens.get(i)); // the index of the token in the alphabet
-
         	if (tokenIndex == -1) {  // if the current token is not found in the alphabet
         		tokenIndex = alphabet.size();
         		ArrayList<Integer> newRow = new ArrayList<Integer>(); // Create a new array that is the size of the alphabet 
@@ -53,7 +86,6 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
     	        }
             	alphabet.add(inputTokens.get(i)); // add the token to the alphabet array
 				alphabet_counts.add(0);
-				System.out.println(alphabet);
             }
         	
             // ok, now add the counts to the transition table
