@@ -26,12 +26,18 @@ import java.net.*;
 public class AIProject2Main extends PApplet {
 
 	MelodyPlayer player; //play a midi sequence
-	MidiFileToNotes midiNotes; //read a midi file
+	MidiFileToNotes midiNotes; // read a midi file
+	UnitTests unitTest = new UnitTests(); // create unit tests
+	
 	ProbabilityGenerator<Integer> pitchGenerator;
 	ProbabilityGenerator<Double> rhythmGenerator;
 	MarkovGenerator<Integer> markovPitchGenerator;
 	MarkovGenerator<Double> markovRhythmGenerator;
-
+	
+	ProbabilityGenerator<Integer> initPitchGenerator = new ProbabilityGenerator<Integer>();
+	ProbabilityGenerator<Double> initRhythmGenerator = new ProbabilityGenerator<Double>();
+	
+	String filePath;
 
 	public static void main(String[] args) {
 		PApplet.main("AIProject2Main"); 
@@ -49,8 +55,9 @@ public class AIProject2Main extends PApplet {
 		markovRhythmGenerator = new MarkovGenerator<Double>();
 		
 		// returns a url
-		String filePath = getPath("mid/Super_Mario_Bros_Theme.mid"); // use this for probabilistic generation
+		//String filePath = getPath("mid/Super_Mario_Bros_Theme.mid"); // use this for probabilistic generation
 		// playMidiFile(filePath);
+		String filePath = getPath("mid/MaryHadALittleLamb.mid"); // use this for probabilistic generation
 		
 		midiNotes = new MidiFileToNotes(filePath); //creates a new MidiFileToNotes -- reminder -- ALL objects in Java must 
 												   //be created with "new". Note how every object is a pointer or reference. Every. single. one.
@@ -65,6 +72,16 @@ public class AIProject2Main extends PApplet {
 		// play the midi notes as they are in the file
 		player.setMelody(midiNotes.getPitchArray());
 		player.setRhythm(midiNotes.getRhythmArray());
+		
+		
+		// make a fix to eliminate this step
+		initPitchGenerator.train(midiNotes.getPitchArray()); // must train to get initial pitch
+		initRhythmGenerator.train(midiNotes.getRhythmArray()); // must train to get initial rhythm
+		
+		markovPitchGenerator.train(midiNotes.getPitchArray());
+		markovPitchGenerator.generate(10, initPitchGenerator.generate());
+		
+		System.out.println("setup: " + markovPitchGenerator.generate(10, initPitchGenerator.generate()));
 	}
 
 	public void draw() {
@@ -106,19 +123,19 @@ public class AIProject2Main extends PApplet {
 			player.reset();
 			println("Melody started!");
 		} else if (key == 'p') {
-			project1GenerateNotes();
+			P1GenerateNotes(); // change this to P2
 		} else if (key == '1') {
-			project1UnitTest1();
+			unitTest.P1UnitTest1();
 		} else if (key == '2') {
-			project1UnitTest2();
+			unitTest.P1UnitTest2();
 		} else if (key == '3') {
-			project1UnitTest3();
+			unitTest.P1UnitTest3();
 		} else if (key == 'q') {
-			project2UnitTest1();
+			unitTest.P2UnitTest1();
 		} else if (key == 'w') {
-			project2UnitTest2();
+			unitTest.P2UnitTest2();
 		} else if (key == 'e') {
-			project2UnitTest3();
+			unitTest.P2UnitTest3();	
 		} else if (key == 's') {		
 			player.hasMelody = false; // stops the player
 		}
@@ -153,8 +170,8 @@ public class AIProject2Main extends PApplet {
 		text("(not using Markov Chain yet; same as Project 1", width/2, height*7/20);
 	}
 	
-	public void project1GenerateNotes() {
-		String filePath = getPath("mid/Super_Mario_Bros_Theme.mid");
+	public void P1GenerateNotes() {
+		filePath = getPath("mid/Super_Mario_Bros_Theme.mid");
 		midiNotes = new MidiFileToNotes(filePath);
 		midiNotes.setWhichLine(0);
 		
@@ -165,14 +182,29 @@ public class AIProject2Main extends PApplet {
 		pitchGenerator.train(midiNotes.getPitchArray());
 		rhythmGenerator.train(midiNotes.getRhythmArray());
 		
-		player = new MelodyPlayer(this, 100.0f);
-		player.setup();
-		
 		// generate 20 new notes using the probabalistic generator
 		player.setMelody(pitchGenerator.generate(35)); 
 		player.setRhythm(rhythmGenerator.generate(35));
 	}
 	
+	public void P2GenerateNotes() {
+		filePath = getPath("mid/Super_Mario_Bros_Theme.mid");
+		midiNotes = new MidiFileToNotes(filePath);
+		midiNotes.setWhichLine(0);
+		
+		markovPitchGenerator = new MarkovGenerator<Integer>();
+		markovRhythmGenerator = new MarkovGenerator<Double>();
+		
+		// call the train function for both pitches and rhythms
+		markovPitchGenerator.train(midiNotes.getPitchArray());
+		markovRhythmGenerator.train(midiNotes.getRhythmArray());
+		
+		// generate 20 new notes using the probabalistic generator
+		player.setMelody(markovPitchGenerator.generate(35)); 
+		player.setRhythm(markovRhythmGenerator.generate(35));
+	}
+	
+	/* See UnitTests
 	public void project1UnitTest1() {
 		// UNIT TEST 1
 		String filePath = getPath("mid/MaryHadALittleLamb.mid");
@@ -275,16 +307,26 @@ public class AIProject2Main extends PApplet {
 	}
 	
 	public void project2UnitTest2() {
-		// UNIT TEST 2 (WORK IN PROGRESS)
+		// UNIT TEST 2
 		String filePath = getPath("mid/MaryHadALittleLamb.mid");
 		midiNotes = new MidiFileToNotes(filePath);
 		midiNotes.setWhichLine(0);
+
+		markovPitchGenerator = new MarkovGenerator<Integer>();
+		markovRhythmGenerator = new MarkovGenerator<Double>();
+		
+		markovPitchGenerator.train(midiNotes.getPitchArray());
+		markovRhythmGenerator.train(midiNotes.getRhythmArray());
+		
+		System.out.println("20 pitches from one melody generated using a Markov Chain from Mary Had a Little Lamb:");
+		System.out.println(markovPitchGenerator.generate(20, initPitchGenerator.generate()));
+		System.out.println("\n20 rhythms from one melody generated using a Markov Chain from Mary Had a Little Lamb:");
+		System.out.println(markovRhythmGenerator.generate(20, initRhythmGenerator.generate()) + "\n------------\n");
 	}
+	*/
 	
 	public void project2UnitTest3() {
-		// UNIT TEST 3 (WORK IN PROGRESS)
-		String filePath = getPath("mid/MaryHadALittleLamb.mid");
-		midiNotes = new MidiFileToNotes(filePath);
-		midiNotes.setWhichLine(0);
+
 	}
+	
 }
