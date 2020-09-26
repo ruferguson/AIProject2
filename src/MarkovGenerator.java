@@ -14,6 +14,7 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 	// a 2D array representing your transition tables – so, probably an array of arrays
     ArrayList<ArrayList<Integer>> transitionTable = new ArrayList(); 
 	ProbabilityGenerator<T> initTokenGenerator = new ProbabilityGenerator<T>();
+	int ttRow;
 
     
 	MarkovGenerator() {
@@ -63,6 +64,8 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 			probabilities.set(j, newProb); 
 			// System.out.println("row.get(j) is " + row.get(j) + ". row total is " + getRowTotal(i) + ". newProb is " + newProb);
 		}
+		
+		// System.out.println("calling markov get probabilities");
 		return probabilities;
 	}
 	
@@ -84,11 +87,18 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
                 		}
     	        }
             	alphabet.add(inputTokens.get(i)); // add the token to the alphabet array
+        		
+            	//System.out.println("inputtoken get i: " + inputTokens.get(i));
+
 				alphabet_counts.add(0);
             }
         	
         	if (lastIndex > -1) { // ok, now add the counts to the transition table
             	for (int j = 0; j < transitionTable.size(); j++) {
+            		
+            		//System.out.println("tt size: " + transitionTable.size());
+            		//System.out.println("alpha is: " + alphabet.get(j) + " and inputToken is: " + inputTokens.get(lastIndex) + " and lastIndex is: " + lastIndex);
+            		
             		if (alphabet.get(j).equals(inputTokens.get(lastIndex))) { // Use lastIndex to get the correct row (array) in your transition table.
                 		ArrayList row = transitionTable.get(j);
     	        		for (int k = 0; k < row.size(); k++) {
@@ -106,7 +116,6 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
         }
 }
 	
-
 
 /* Our Data:        
 
@@ -154,26 +163,27 @@ Note that initToken should probably be a parameter into your generate function. 
 			if (initToken.equals(alphabet.get(i))) {
 				tokenRow = (T) getTransTable(i);
 				found = true;
+				ttRow = i;
 				// System.out.println("found true");
 			} else {
 				i ++;
 				// System.out.println("adding to i");
 			}
 		}
-		//System.out.println("exited while " + i);
 		//System.out.println("i is: " + i + " and alphabet(i) is: " + alphabet.get(i) + " and alphabet size is: " + alphabet.size() + " and initToken is " + initToken + " and transition table size is " + transitionTable.size());
 
-		
 		return tokenRow;
 	}
 	
-	ArrayList<T> generate(int length, T initToken) {
-		// System.out.println(initToken);
-		
+	ArrayList<T> generate(int length, T initToken) {		
 		generate(initToken);
 		ArrayList<T> newSequence = new ArrayList<T>();
 		for (int i = 0; i < length; i++) {
-			newSequence.add(generate());
+			if (getRowTotal(ttRow) == 0) {
+				newSequence.add(generate(getProbabilities()));
+			} else {
+				newSequence.add(generate(getProbabilities(ttRow)));
+			}
 		}
 		return newSequence;
 	}
@@ -181,11 +191,13 @@ Note that initToken should probably be a parameter into your generate function. 
 	
 	ArrayList<T> generate(int length) {
 		initTokenGenerator.train(alphabet);
-		T initToken = initTokenGenerator.generate();
+		
+		T initToken = initTokenGenerator.generate(initTokenGenerator.getProbabilities());
+		
 		generate(length, initToken);
 		ArrayList<T> newSequence = new ArrayList<T>();
 		for (int i = 0; i < length; i++) {
-			newSequence.add(generate());
+			newSequence.add(generate(getProbabilities(i)));
 		}
 		return newSequence;
 	}

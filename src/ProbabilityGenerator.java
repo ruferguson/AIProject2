@@ -65,6 +65,8 @@ public class ProbabilityGenerator<T> {
 			}
 			probabilities.set(i, (double) alphabet_counts.get(i) / getTotal()); 
 		}
+		// System.out.println("calling regular get probabilities");
+
 		return probabilities;
 	}
 	
@@ -72,11 +74,15 @@ public class ProbabilityGenerator<T> {
 	public ArrayList<Double> getProbDist(ArrayList<Double> probs) { 
 		double temp = 0;
 		if (probDist.isEmpty()) {
-			probDist.add(temp); 
-		}
-		for (int i = 0; i < probs.size(); i++) {
-			temp = temp + probs.get(i);
-			probDist.add(temp);
+			for (int i = 0; i < probs.size(); i++) {
+				temp = temp + probs.get(i);
+				probDist.add(temp); 
+			} 
+		} else {
+			for (int i = 0; i < probs.size(); i++) {
+				temp = temp + probs.get(i);
+				probDist.set(i, temp);
+			} 
 		}
 		return probDist;
 	}
@@ -102,8 +108,11 @@ public class ProbabilityGenerator<T> {
 		}
 	}
 	
-	T generate() {
-		getProbDist(getProbabilities());
+	T generate(ArrayList<Double> probabilities) {
+		getProbDist(probabilities);
+		// System.out.println(getProbabilities());
+
+		
 		T newToken = null;
 		
 		double rIndex = (double) Math.random(); // generate a random double between 0 and 1
@@ -111,7 +120,7 @@ public class ProbabilityGenerator<T> {
 		int i = 0; // to allow exit from while()
 		
 		while ((i <= probabilities.size() - 1) && (!found)) { 
-			if (rIndex < probDist.get(i + 1)) {
+			if (rIndex < probDist.get(i)) {
 				newToken = alphabet.get(i);
 				found = true;
 			}
@@ -124,7 +133,7 @@ public class ProbabilityGenerator<T> {
 		ArrayList<T> newSequence = new ArrayList<T>();
 		
 		for (int i = 0; i < length; i++) {
-			newSequence.add(generate());
+			newSequence.add(generate(getProbabilities()));
 		}
 		
 		return newSequence;

@@ -79,9 +79,11 @@ public class AIProject2Main extends PApplet {
 		initRhythmGenerator.train(midiNotes.getRhythmArray()); // must train to get initial rhythm
 		
 		markovPitchGenerator.train(midiNotes.getPitchArray());
-		markovPitchGenerator.generate(10, initPitchGenerator.generate());
+		markovPitchGenerator.generate(10, initPitchGenerator.generate(initPitchGenerator.getProbabilities()));
 		
-		System.out.println("setup: " + markovPitchGenerator.generate(10, initPitchGenerator.generate()));
+		System.out.println("setup: " + markovPitchGenerator.generate(20, initPitchGenerator.generate(initPitchGenerator.getProbabilities())));
+		System.out.println(markovPitchGenerator.getProbDist(markovPitchGenerator.getProbabilities()));
+
 	}
 
 	public void draw() {
@@ -198,10 +200,10 @@ public class AIProject2Main extends PApplet {
 		// call the train function for both pitches and rhythms
 		markovPitchGenerator.train(midiNotes.getPitchArray());
 		markovRhythmGenerator.train(midiNotes.getRhythmArray());
-		
+				
 		// generate 20 new notes using the probabalistic generator
 		player.setMelody(markovPitchGenerator.generate(35)); 
-		player.setRhythm(markovRhythmGenerator.generate(35));
+		player.setRhythm(markovRhythmGenerator.generate(35));	
 	}
 	
 	/* See UnitTests
