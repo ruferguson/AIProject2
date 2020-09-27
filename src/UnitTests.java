@@ -1,3 +1,7 @@
+/* Ru Ferguson
+ * 28 September 2020
+ * 
+ * This class is used for the unit test methods to consolidate code more nicely. */
 
 import java.io.UnsupportedEncodingException;
 import java.net.*;
@@ -10,14 +14,11 @@ public class UnitTests  extends PApplet {
 	MelodyPlayer player; //play a midi sequence
 	MidiFileToNotes midiNotes; // read a midi file
 	
-	ProbabilityGenerator<Integer> pitchGen;
-	ProbabilityGenerator<Double> rhythmGen;
-	
+	ProbabilityGenerator<Integer> pitchGen, initPitchGen;
+	ProbabilityGenerator<Double> rhythmGen, initRhythmGen;
 	MarkovGenerator<Integer> markovPitchGen;
 	MarkovGenerator<Double> markovRhythmGen;
 	
-	ProbabilityGenerator<Integer> initPitchGen;
-	ProbabilityGenerator<Double> initRhythmGen;
 	
 	UnitTests() {
 		String filePath = getPath("mid/MaryHadALittleLamb.mid");
@@ -47,7 +48,7 @@ public class UnitTests  extends PApplet {
 		System.out.println("\n------------\n");
 	}
 	
-	void P1UnitTest2() {	// Project 1: Unit Test 2		
+	void P1UnitTest2() {	// Project 1: Unit Test 2
 		trainP1();
 		
 		System.out.println("20 pitches from one melody generated from Mary Had a Little Lamb:");
@@ -112,52 +113,31 @@ public class UnitTests  extends PApplet {
 	
 	void P2UnitTest3() {	// Project 2: Unit Test 3
 		// UNIT TEST 3
-		/* Our procedure:
+		trainP2();
 
-		           firstNoteGen.train(song);
-		           melodyGen.train(song);
-
-		            for 1 to 10,000 do
-		            {         
-
-		                        initToken = firstNoteGen.generate(1); //only generate 1 token
-
-		                        newSong = melodyGen.generate(initToken, 20); //generates 20 notes using the initToken
-
-		                        ttGen.train(newSong); //gets the probabilities of what we are generating
-
-		            }*/
-
-				trainP2();
+		MarkovGenerator<Integer> ttDistPitchGen = new MarkovGenerator<Integer>();
+		MarkovGenerator<Double> ttDistRhythmGen = new MarkovGenerator<Double>();
 		
-				MarkovGenerator<Integer> ttDistPitchGen = new MarkovGenerator<Integer>();
-				MarkovGenerator<Double> ttDistRhythmGen = new MarkovGenerator<Double>();
-				
-				ArrayList<Integer> newSongPitches = new ArrayList<Integer>();
-				ArrayList<Double> newSongRhythms = new ArrayList<Double>();	
-				
-				for (int i = 0; i < 9999; i++) {
-					
-					newSongPitches = markovPitchGen.generate(20, initPitchGen.generate(initPitchGen.getProbabilities()));
-					newSongRhythms = markovRhythmGen.generate(20, initRhythmGen.generate(initRhythmGen.getProbabilities()));
-					//System.out.println(newSongRhythms);
-
-					
-					//System.out.println(i);
-					ttDistPitchGen.train(newSongPitches);
-					ttDistRhythmGen.train(newSongRhythms);
-				}
-				
-				System.out.println("\nProbability of Generated Pitches after 10,000 iterations of 20 note melodies:\n\n-----Transition Table-----\n\n   " + ttDistPitchGen.getAlphabet());
-				for (int i = 0; i < ttDistPitchGen.getAlphabetSize(); i++) {
-			        System.out.println(ttDistPitchGen.getToken(i) + " " + ttDistPitchGen.getProbabilities(i));
-				}
-				System.out.println("\n------------\n\nProbability of Generated Rhythms after 10,000 iterations of 20 note melodies:\n\n-----Transition Table-----\n\n    " + ttDistRhythmGen.getAlphabet());
-				for (int i = 0; i < ttDistRhythmGen.getAlphabetSize(); i++) {
-			        System.out.println(ttDistRhythmGen.getToken(i) + " " + ttDistRhythmGen.getProbabilities(i));
-				}
-				System.out.println("\n------------\n");	
-	}
+		ArrayList<Integer> newSongPitches = new ArrayList<Integer>();
+		ArrayList<Double> newSongRhythms = new ArrayList<Double>();	
+		
+		for (int i = 0; i < 9999; i++) {
+			newSongPitches = markovPitchGen.generate(20, initPitchGen.generate(initPitchGen.getProbabilities()));
+			newSongRhythms = markovRhythmGen.generate(20, initRhythmGen.generate(initRhythmGen.getProbabilities()));
+			ttDistPitchGen.train(newSongPitches);
+			ttDistRhythmGen.train(newSongRhythms);
+		}
+		
+		System.out.println("\nProbability of Generated Pitches after 10,000 iterations of 20 note melodies:\n\n-----Transition Table-----\n\n   " + ttDistPitchGen.getAlphabet());
+		for (int i = 0; i < ttDistPitchGen.getAlphabetSize(); i++) {
+	        System.out.println(ttDistPitchGen.getToken(i) + " " + ttDistPitchGen.getProbabilities(i));
+		}
+		System.out.println("\n------------\n\nProbability of Generated Rhythms after 10,000 iterations of 20 note melodies:\n\n-----Transition Table-----\n\n    " + ttDistRhythmGen.getAlphabet());
+		for (int i = 0; i < ttDistRhythmGen.getAlphabetSize(); i++) {
+	        System.out.println(ttDistRhythmGen.getToken(i) + " " + ttDistRhythmGen.getProbabilities(i));
+		}
+		System.out.println("\n------------\n");	
+}
 	
 	void trainP1() {
 		pitchGen.train(midiNotes.getPitchArray());

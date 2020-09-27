@@ -1,7 +1,7 @@
 /* Ru Ferguson
- * 21 September 2020
+ * 28 September 2020
  * 
- * This class inherits from the superclass, ProbabilityGenerator from project 1 and will use Markov chains
+ * This class inherits from the superclass, ProbabilityGenerator from Project 1 and will use Markov chains
  * to predict the next most probable "best sounding" musical notes based on the probability calculated
  * using the order and occurrences of each note. The train() method formulate the probabilities and the
  * next most probable note will be output and stored using the using the generate() method. */
@@ -11,20 +11,22 @@ import java.util.Arrays;
 
 public class MarkovGenerator<T> extends ProbabilityGenerator<T> {	
 	
-	// a 2D array representing your transition tables – so, probably an array of arrays
-    ArrayList<ArrayList<Integer>> transitionTable = new ArrayList(); 
+    ArrayList<ArrayList<Integer>> transitionTable = new ArrayList();	// a 2D array representing your transition tables – an array of arrays
 	ProbabilityGenerator<T> initTokenGenerator = new ProbabilityGenerator<T>();
 	int ttRow;
-
+	T newToken;
     
+	// inherits from ProbabilityGenerator
 	MarkovGenerator() {
 		super();
 	}
 		
-	// returns the an ArrayList from the transitionTable
+	
+	// returns the an ArrayList of row i from the transitionTable
 	public ArrayList<Integer> getTransTable(int i) {
 		return transitionTable.get(i);
 	}
+	
 	
 	// prints the transition table
 	void printTransTable () {	
@@ -37,8 +39,9 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
         	System.out.println();
     	}
 	}
+
 	
-	// returns the total number of notes in the row
+	// returns the total number of notes in the row i
 	public Integer getRowTotal(int i) {
 		int total = 0;
 		ArrayList row = transitionTable.get(i);
@@ -62,14 +65,13 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
 				newProb = 0;
 			}
 			probabilities.set(j, newProb); 
-			// System.out.println("row.get(j) is " + row.get(j) + ". row total is " + getRowTotal(i) + ". newProb is " + newProb);
 		}
 		
-		// System.out.println("calling markov get probabilities");
 		return probabilities;
 	}
 	
 	
+	// populates the transition table with counts of the occurrences of each note according to which note it follows
 	void train(ArrayList<T> inputTokens) {
 	    int lastIndex = -1; // This is the index of the PREVIOUS token.
         
@@ -88,17 +90,11 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
     	        }
             	alphabet.add(inputTokens.get(i)); // add the token to the alphabet array
         		
-            	//System.out.println("inputtoken get i: " + inputTokens.get(i));
-
 				alphabet_counts.add(0);
             }
         	
         	if (lastIndex > -1) { // ok, now add the counts to the transition table
             	for (int j = 0; j < transitionTable.size(); j++) {
-            		
-            		//System.out.println("tt size: " + transitionTable.size());
-            		//System.out.println("alpha is: " + alphabet.get(j) + " and inputToken is: " + inputTokens.get(lastIndex) + " and lastIndex is: " + lastIndex);
-            		
             		if (alphabet.get(j).equals(inputTokens.get(lastIndex))) { // Use lastIndex to get the correct row (array) in your transition table.
                 		ArrayList row = transitionTable.get(j);
     	        		for (int k = 0; k < row.size(); k++) {
@@ -115,80 +111,46 @@ public class MarkovGenerator<T> extends ProbabilityGenerator<T> {
         	lastIndex = lastIndex + 1; //setting current to previous for next round
         }
 }
+
 	
-
-/* Our Data:        
-
-alphabet – array of unique symbols/tokens in the input
-transitionTable – a 2D array representing your transition tables – so, probably an array of arrays
-initToken - initial/starting symbol or token – the symbol to start generating from
-
-
-Our Procedure:
-
-In order to do a markov chain, we must start with an initial symbol. You may start with a symbol by either:
-using an instance of your ProbabilityGenerator class to generate one from the input
-asking for user input (in the GUI, not console input)
-setting it to a hard-coded number (must be a constant passed as a parameter)
-Note that for your unit tests, you should use option a) but for “Do the THING” you may use any technique.
-
-Ok, now that we have our initToken
-
-find initToken in the alphabet (ie, get the index of where it is)
-Use that index to access the row (ie one array from the array of arrays) of probabilities in transitionTable
-This array is the beginning of a probability distribution. It has all the counts. It is exactly like the array
-of counts that you had in Project 1. Thus, You already have a function which generates from a probability distribution.
-Hand that function (your generate function from Project 1) your row(i.e., array of probabilities/counts) and
-generate from that. You may have to rewrite it to accommodate your new needs. Make sure Project 1 still works
-afterwards. Run your Project 1 unit tests to check.
-
-If you need to generate more than one symbol, use this result to generate another.
-That is, set initToken = the token you just generated. Go to step 1.
-
-Note that initToken should probably be a parameter into your generate function. I suggest you have 3 functions
-
-            T generate(T initToken){}                          
-
-            ArrayList<T> generate(T initToken, int numberOfTokensToGenerate){} //this calls the above.
-
-            ArrayList<T> generate(int numberOfTokensToGenerate){} //this calls the above with a random initToken */
-	
-	T generate(T initToken) { 
+	// determines which row to generate the next token from in the transition table
+	T generate(T initToken) {	//start with an initial symbol
 		T tokenRow = null;
 		boolean found = false;
 		int i = 0;
-		while (!found && i < alphabet.size()) {
-			//System.out.println("i is: " + i + " and alphabet(i) is: " + alphabet.get(i) + " and alphabet size is: " + alphabet.size() + " and initToken is " + initToken + " and transition table size is " + transitionTable.size());
-			
-			if (initToken.equals(alphabet.get(i))) {
-				tokenRow = (T) getTransTable(i);
+		while (!found && i < alphabet.size()) {				
+			if (initToken.equals(alphabet.get(i))) {	// find initToken in the alphabet (ie, get the index of where it is)
+				tokenRow = (T) getTransTable(i);	// Use that index to access the row (ie one array from the array of arrays) of probabilities in transitionTable
 				found = true;
 				ttRow = i;
-				// System.out.println("found true");
 			} else {
 				i ++;
-				// System.out.println("adding to i");
 			}
 		}
-		//System.out.println("i is: " + i + " and alphabet(i) is: " + alphabet.get(i) + " and alphabet size is: " + alphabet.size() + " and initToken is " + initToken + " and transition table size is " + transitionTable.size());
-
 		return tokenRow;
 	}
 	
-	ArrayList<T> generate(int length, T initToken) {		
-		generate(initToken);
+	
+	// returns a melody with tokens generated using the above method and the inherited generate method
+	ArrayList<T> generate(int length, T initToken) {
 		ArrayList<T> newSequence = new ArrayList<T>();
 		for (int i = 0; i < length; i++) {
-			if (getRowTotal(ttRow) == 0) {
-				newSequence.add(generate(getProbabilities()));
+			T tokenRow = generate(initToken); // call the above generate function to find tokenRow
+
+			if (getRowTotal(ttRow) == 0) { // if there is 0% chance use random probability from original probability generator
+				newToken = generate(getProbabilities());
 			} else {
-				newSequence.add(generate(getProbabilities(ttRow)));
+				newToken = generate(getProbabilities(ttRow)); // else use the probability distribution from the transition table
 			}
+			newSequence.add(newToken);
+			initToken = newToken;	// set initToken = the token you just generated
+			
 		}
 		return newSequence;
 	}
 
 	
+	// this calls the above with a random initToken using the probability generator from Project 1
 	ArrayList<T> generate(int length) {
 		initTokenGenerator.train(alphabet);
 		
@@ -197,22 +159,10 @@ Note that initToken should probably be a parameter into your generate function. 
 		generate(length, initToken);
 		ArrayList<T> newSequence = new ArrayList<T>();
 		for (int i = 0; i < length; i++) {
-			newSequence.add(generate(getProbabilities(i)));
+			newSequence.add(generate(getProbabilities()));
 		}
 		return newSequence;
 	}
-	
-	/*
-	ArrayList<T> generate(int length) {
-		initTokenGenerator.train(alphabet);
-		T initToken = initTokenGenerator.generate();
-		generate(length, initToken);
-		ArrayList<T> newSequence = new ArrayList<T>();
-		for (int i = 0; i < length; i++) {
-			newSequence.add(generate());
-		}
-		return newSequence;
-	} */
 	
 }
 	
